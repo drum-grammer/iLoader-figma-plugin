@@ -53,18 +53,42 @@ async function createTextNodesFromData(data: QuestionnaireData) {
     questionNode.y = yOffset;
     figma.currentPage.appendChild(questionNode);
 
-    yOffset += questionNode.height + 10; // 10은 간격입니다.
+    // questionNode에 대한 큰 색깔 있는 박스 생성
+    const questionBox = figma.createRectangle();
+    questionBox.resize(questionNode.width + 20, questionNode.height + 10); // 여백을 위해 크기 조절
+    questionBox.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.6, b: 0.8 } }]; // 색상 설정
+    questionBox.y = yOffset;
+    figma.currentPage.appendChild(questionBox);
+    questionNode.y = yOffset + 5; // 텍스트 위치 조절
+    questionNode.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }]; // 텍스트 색상 설정
 
+    yOffset += questionBox.height + 10;
+
+    const answerNodes = [];
     for (const answer of extract.answers) {
       const answerNode = figma.createText();
       answerNode.characters = answer;
       answerNode.y = yOffset;
       figma.currentPage.appendChild(answerNode);
 
-      yOffset += answerNode.height + 5; // 5는 간격입니다.
+      // answerNode에 대한 작은 박스 생성
+      const answerBox = figma.createRectangle();
+      answerBox.resize(answerNode.width + 15, answerNode.height + 5); // 여백을 위해 크기 조절
+      answerBox.fills = [{ type: 'SOLID', color: { r: 0.8, g: 0.8, b: 0.8 } }]; // 색상 설정
+      answerBox.y = yOffset;
+      figma.currentPage.appendChild(answerBox);
+      answerNode.y = yOffset + 2.5; // 텍스트 위치 조절
+
+      yOffset += answerBox.height + 5;
+
+      answerNodes.push(answerBox, answerNode);
     }
 
-    yOffset += 20; // 각 질문 사이의 추가 간격입니다.
+    // 그룹핑
+    const group = figma.group([questionBox, questionNode, ...answerNodes], figma.currentPage);
+    group.name = extract.question_content;
+
+    yOffset += 20;
   }
 
   figma.closePlugin();
