@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+  <input type="text" id="documentKey" placeholder="Document Key" />
+  <button onclick="sendDocumentKey()">Submit</button>
+
+  <script>
+    function sendDocumentKey() {
+      const documentKey = document.getElementById('documentKey').value;
+      window.parent.postMessage({ pluginMessage: { type: 'document-key', documentKey } }, '*');
+    }
+  </script>
+</body>
+</html>

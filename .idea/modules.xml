@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.trunk/plugins/trunk/linters/google-java-format/google-java-format.iml" filepath="$PROJECT_DIR$/.trunk/plugins/trunk/linters/google-java-format/google-java-format.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/iLoaderGS.iml" filepath="$PROJECT_DIR$/.idea/iLoaderGS.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.trunk/plugins/trunk/linters/ktlint/ktlint.iml" filepath="$PROJECT_DIR$/.trunk/plugins/trunk/linters/ktlint/ktlint.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.trunk/plugins/trunk/linters/pmd/pmd.iml" filepath="$PROJECT_DIR$/.trunk/plugins/trunk/linters/pmd/pmd.iml" />
+    </modules>
+  </component>
+</project>
