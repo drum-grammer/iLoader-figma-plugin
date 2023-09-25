@@ -50,17 +50,17 @@ async function createTextNodesFromData(data: QuestionnaireData) {
   for (const extract of data.extracts) {
     const questionNode = figma.createText();
     questionNode.characters = extract.question_content;
-    figma.currentPage.appendChild(questionNode);
 
     // questionNode에 대한 큰 색깔 있는 박스 생성
     const questionBox = figma.createRectangle();
     questionBox.resize(questionNode.width + 20, questionNode.height + 10);
     questionBox.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.6, b: 0.8 } }];
+    questionBox.y = yOffset;
     figma.currentPage.appendChild(questionBox);
 
     questionNode.y = yOffset + 5;
     questionNode.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
-    questionBox.y = yOffset;
+    figma.currentPage.appendChild(questionNode);
 
     yOffset += questionBox.height + 10;
 
@@ -69,16 +69,16 @@ async function createTextNodesFromData(data: QuestionnaireData) {
     for (const answer of extract.answers) {
       const answerNode = figma.createText();
       answerNode.characters = answer;
-      figma.currentPage.appendChild(answerNode);
 
       // answerNode에 대한 작은 박스 생성
       const answerBox = figma.createRectangle();
       answerBox.resize(answerNode.width + 15, answerNode.height + 5);
       answerBox.fills = [{ type: 'SOLID', color: { r: 0.8, g: 0.8, b: 0.8 } }];
+      answerBox.y = yOffset;
       figma.currentPage.appendChild(answerBox);
 
       answerNode.y = yOffset + 2.5;
-      answerBox.y = yOffset;
+      figma.currentPage.appendChild(answerNode);
 
       yOffset += answerBox.height + 5;
       totalAnswerHeight += answerBox.height + 5;
@@ -92,9 +92,10 @@ async function createTextNodesFromData(data: QuestionnaireData) {
     wrappingBox.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
     wrappingBox.y = questionBox.y;
     figma.currentPage.appendChild(wrappingBox);
-    figma.currentPage.appendChild(questionBox);  // 박스를 위로 올림
+    figma.currentPage.appendChild(questionBox);
+    figma.currentPage.appendChild(questionNode);
     for (const node of answerNodes) {
-      figma.currentPage.appendChild(node);  // 박스를 위로 올림
+      figma.currentPage.appendChild(node);
     }
 
     // 그룹핑
