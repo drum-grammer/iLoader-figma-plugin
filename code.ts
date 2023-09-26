@@ -127,12 +127,26 @@ function createAnswers(extract: AnswerData, yOffset: number) {
   return answerNodes;
 }
 
-function createWrappingBox(questionBox: RectangleNode, answerNodes: TextNode[], maxBoxWidth: number, padding: number) {
-  const totalHeight = questionBox.height + answerNodes.reduce((acc, node) => acc + node.height + 5, 0);
+/**
+ * 질문과 답변을 감싸는 회색 박스를 생성합니다.
+ *
+ * @param questionBox - 질문 텍스트를 포함하는 박스
+ * @param answerNodes - 답변 텍스트 노드들
+ * @param maxBoxWidth - 가장 넓은 박스의 너비
+ * @param PADDING - 박스 주변의 패딩 값
+ * @returns 생성된 회색 박스
+ */
+function createWrappingBox(
+    questionBox: RectangleNode,
+    answerNodes: TextNode[],
+    maxBoxWidth: number,
+    PADDING: number
+): RectangleNode {
+  const totalHeight = answerNodes.reduce((sum, node) => sum + node.height, questionBox.height) + 2 * PADDING;
   const wrappingBox = figma.createRectangle();
-  wrappingBox.resize(maxBoxWidth + 2 * padding, totalHeight + 2 * padding);
+  wrappingBox.resize(maxBoxWidth + 2 * PADDING, totalHeight);
   wrappingBox.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
-  wrappingBox.y = questionBox.y - padding;
-  wrappingBox.x = (figma.viewport.bounds.width - (maxBoxWidth + 2 * padding)) / 2;
+  wrappingBox.x = questionBox.x - PADDING; // 박스의 x 좌표를 조정
+  wrappingBox.y = questionBox.y - PADDING;
   return wrappingBox;
 }
