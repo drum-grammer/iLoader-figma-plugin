@@ -44,6 +44,7 @@ figma.ui.onmessage = (msg) => {
 
 async function createTextNodesFromData(data: QuestionnaireData) {
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+  await figma.loadFontAsync({ family: "Inter", style: "Medium" });
 
   let yOffset = 0;
 
@@ -51,7 +52,6 @@ async function createTextNodesFromData(data: QuestionnaireData) {
     const questionNode = figma.createText();
     questionNode.characters = extract.question_content;
 
-    // questionNode에 대한 큰 색깔 있는 박스 생성
     const questionBox = figma.createRectangle();
     questionBox.resize(questionNode.width + 20, questionNode.height + 10);
     questionBox.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.6, b: 0.8 } }];
@@ -59,7 +59,6 @@ async function createTextNodesFromData(data: QuestionnaireData) {
     figma.currentPage.appendChild(questionBox);
 
     questionNode.y = yOffset + 5;
-    questionNode.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
     figma.currentPage.appendChild(questionNode);
 
     yOffset += questionBox.height + 10;
@@ -70,23 +69,26 @@ async function createTextNodesFromData(data: QuestionnaireData) {
       const answerNode = figma.createText();
       answerNode.characters = answer;
 
-      // answerNode에 대한 작은 박스 생성
-      const answerBox = figma.createRectangle();
-      answerBox.resize(answerNode.width + 15, answerNode.height + 5);
-      answerBox.fills = [{ type: 'SOLID', color: { r: 0.8, g: 0.8, b: 0.8 } }];
-      answerBox.y = yOffset;
-      figma.currentPage.appendChild(answerBox);
+      // 그림자 효과를 answerNode 에 추가
+      answerNode.effects = [{
+        type: "DROP_SHADOW",
+        color: { r: 0, g: 0, b: 0, a: 0.5 },
+        offset: { x: 2, y: 2 },
+        radius: 2,
+        spread: 0,
+        blendMode: "NORMAL",  // 이 부분을 추가해주세요
+        visible: true
+      }];
 
-      answerNode.y = yOffset + 2.5;
+      answerNode.y = yOffset;
       figma.currentPage.appendChild(answerNode);
 
-      yOffset += answerBox.height + 5;
-      totalAnswerHeight += answerBox.height + 5;
+      yOffset += answerNode.height + 5;
+      totalAnswerHeight += answerNode.height + 5;
 
-      answerNodes.push(answerBox, answerNode);
+      answerNodes.push(answerNode);
     }
 
-    // questionBox와 answerBox를 감싸는 박스 생성
     const wrappingBox = figma.createRectangle();
     wrappingBox.resize(questionBox.width, questionBox.height + totalAnswerHeight);
     wrappingBox.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
@@ -98,7 +100,6 @@ async function createTextNodesFromData(data: QuestionnaireData) {
       figma.currentPage.appendChild(node);
     }
 
-    // 그룹핑
     const group = figma.group([wrappingBox, questionBox, questionNode, ...answerNodes], figma.currentPage);
     group.name = extract.question_content;
 
