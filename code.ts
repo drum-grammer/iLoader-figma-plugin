@@ -44,6 +44,7 @@ figma.ui.onmessage = (msg) => {
 
 
 async function createTextNodesFromData(data: QuestionnaireData) {
+  // 폰트 로드
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
   await figma.loadFontAsync({ family: "Inter", style: "Medium" });
 
@@ -55,13 +56,21 @@ async function createTextNodesFromData(data: QuestionnaireData) {
     const { questionBox, questionNode } = createQuestion(extract, yOffset);
     const answerNodes = createAnswers(extract, yOffset + questionBox.height + 10);
 
+    // wrappingBox 생성
     const wrappingBox = createWrappingBox(questionBox, answerNodes, maxBoxWidth, PADDING);
+
+    // 노드들 추가
     figma.currentPage.appendChild(wrappingBox);
+    figma.currentPage.appendChild(questionBox);
+    figma.currentPage.appendChild(questionNode);
+    for (const node of answerNodes) {
+      figma.currentPage.appendChild(node);
+    }
 
     const group = figma.group([wrappingBox, questionBox, questionNode, ...answerNodes], figma.currentPage);
     group.name = extract.question_content;
 
-    yOffset += wrappingBox.height + PADDING;
+    yOffset += group.height + 20; // 그룹의 높이를 기반으로 yOffset 갱신
   }
 
   figma.closePlugin();
@@ -82,7 +91,7 @@ function getMaxBoxWidth(data: QuestionnaireData): number {
       }
     }
   }
-  return maxWidth;
+  return maxWidth + 20;
 }
 
 function createQuestion(extract: AnswerData, yOffset: number) {
