@@ -151,7 +151,7 @@ function createWrappingBox(
     maxBoxWidth: number,
     PADDING: number
 ): RectangleNode {
-  const totalHeight = answerNodes.reduce((sum, node) => sum + node.height, questionBox.height) + 2 * PADDING;
+  const totalHeight = answerNodes.reduce((sum, node) => sum + node.height, questionBox.height) + (4 + answerNodes.length / 2) * PADDING;
   const wrappingBox = figma.createRectangle();
   wrappingBox.resize(maxBoxWidth + 2 * PADDING, totalHeight);
   wrappingBox.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
