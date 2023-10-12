@@ -179,42 +179,6 @@ function createAnswersFigJamSticky(extract: AnswerData, initialYOffset: number):
   return answerNodes;
 }
 
-
-function createAnswers(extract: AnswerData, yOffset: number): (TextNode | StickyNode)[] {
-  const answerNodes = [];
-  for (const answer of extract.answers) {
-    let answerNode: TextNode | StickyNode;
-
-    if (figma.editorType === 'figjam') {
-      // FigJam에서 실행되는 경우
-      answerNode = figma.createSticky();
-      answerNode.text.characters = answer;
-      answerNode.text.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }];
-    } else {
-      // Figma에서 실행되는 경우
-      answerNode = figma.createText();
-      answerNode.characters = answer;
-      answerNode.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }];
-      answerNode.effects = [{
-        type: "DROP_SHADOW",
-        color: { r: 0, g: 0, b: 0, a: 0.3 },
-        offset: { x: 2, y: 2 },
-        radius: 2,
-        spread: 0,
-        visible: true,
-        blendMode: "NORMAL"
-      }];
-    }
-
-    answerNode.y = yOffset;
-    figma.currentPage.appendChild(answerNode);
-    answerNodes.push(answerNode);
-
-    yOffset += answerNode.height + 5;
-  }
-  return answerNodes;
-}
-
 /**
  * 질문과 답변을 감싸는 회색 박스를 생성합니다.
  *
