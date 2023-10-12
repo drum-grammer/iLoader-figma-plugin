@@ -84,6 +84,11 @@ async function createTextNodesFromData(data: QuestionnaireData) {
 
 function getMaxBoxWidth(data: QuestionnaireData): number {
   let maxWidth = 0;
+
+  if (figma.editorType === 'figjam') {
+    return data.extracts.length / 5 * 1200 + 20;
+  }
+
   for (const extract of data.extracts) {
     const textNode = figma.createText();
     textNode.characters = extract.question_content;
@@ -140,19 +145,40 @@ function createAnswersFigmaNode(extract: AnswerData, yOffset: number): TextNode[
   return answerNodes;
 }
 
-function createAnswersFigJamSticky(extract: AnswerData, yOffset: number): StickyNode[] {
+function createAnswersFigJamSticky(extract: AnswerData, initialYOffset: number): StickyNode[] {
   const answerNodes: StickyNode[] = [];
+  const MAX_VERTICAL_COUNT = 5; // 세로로 배치될 최대 노드 수
+  let xShift = 0; // x축 이동 거리
+  let currentCount = 0; // 현재 세로로 배치된 노드 수
+  let yOffset = initialYOffset;
+
   for (const answer of extract.answers) {
     const answerNode = figma.createSticky();
     answerNode.text.characters = answer;
     answerNode.text.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }];
     answerNode.y = yOffset;
+
+    // 5개가 차면 x축으로 이동
+    if (currentCount !== 0 && currentCount % MAX_VERTICAL_COUNT === 0) {
+      xShift += answerNode.width + 10; // 10은 노드 간의 간격
+    } else {
+      yOffset += answerNode.height + 5;
+    }
+
+    // 6번째 항목부터 yOffset 초기화
+    if (currentCount === MAX_VERTICAL_COUNT) {
+      yOffset = initialYOffset + answerNode.height + 5;
+    }
+
+    answerNode.x = xShift;
     figma.currentPage.appendChild(answerNode);
     answerNodes.push(answerNode);
-    yOffset += answerNode.height + 5;
+
+    currentCount++;
   }
   return answerNodes;
 }
+
 
 function createAnswers(extract: AnswerData, yOffset: number): (TextNode | StickyNode)[] {
   const answerNodes = [];
@@ -204,7 +230,7 @@ function createWrappingBox(
     maxBoxWidth: number,
     PADDING: number
 ): RectangleNode {
-  const totalHeight = answerNodes.reduce((sum, node) => sum + node.height, questionBox.height) + (4 + answerNodes.length / 2) * PADDING;
+  const totalHeight = answerNodes.reduce((sum, node) => sum + node.height, questionBox.height);
   const wrappingBox = figma.createRectangle();
   wrappingBox.resize(maxBoxWidth + 4 * PADDING, totalHeight);
   wrappingBox.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
