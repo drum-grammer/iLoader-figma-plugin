@@ -53,8 +53,14 @@ async function createTextNodesFromData(data: QuestionnaireData) {
   let maxBoxWidth = getMaxBoxWidth(data);
 
   for (const extract of data.extracts) {
-    const { questionBox, questionNode } = createQuestion(extract, yOffset);
-    const answerNodes = createAnswers(extract, yOffset + questionBox.height + 10);
+    const {questionBox, questionNode} = createQuestion(extract, yOffset);
+
+    let answerNodes;
+    if (figma.editorType === 'figjam') {
+      answerNodes = createAnswersFigJamSticky(extract, yOffset + questionBox.height + 10);
+    } else {
+      answerNodes = createAnswersFigmaNode(extract, yOffset + questionBox.height + 10);
+    }
 
     // wrappingBox 생성
     const wrappingBox = createWrappingBox(questionBox, answerNodes, maxBoxWidth, PADDING);
@@ -111,8 +117,8 @@ function createQuestion(extract: AnswerData, yOffset: number) {
   return { questionBox, questionNode };
 }
 
-function createAnswers(extract: AnswerData, yOffset: number) {
-  const answerNodes = [];
+function createAnswersFigmaNode(extract: AnswerData, yOffset: number): TextNode[] {
+  const answerNodes: TextNode[] = [];
   for (const answer of extract.answers) {
     const answerNode = figma.createText();
     answerNode.characters = answer;
@@ -127,7 +133,54 @@ function createAnswers(extract: AnswerData, yOffset: number) {
       blendMode: "NORMAL"
     }];
     answerNode.y = yOffset;
+    figma.currentPage.appendChild(answerNode);
+    answerNodes.push(answerNode);
+    yOffset += answerNode.height + 5;
+  }
+  return answerNodes;
+}
 
+function createAnswersFigJamSticky(extract: AnswerData, yOffset: number): StickyNode[] {
+  const answerNodes: StickyNode[] = [];
+  for (const answer of extract.answers) {
+    const answerNode = figma.createSticky();
+    answerNode.text.characters = answer;
+    answerNode.text.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }];
+    answerNode.y = yOffset;
+    figma.currentPage.appendChild(answerNode);
+    answerNodes.push(answerNode);
+    yOffset += answerNode.height + 5;
+  }
+  return answerNodes;
+}
+
+function createAnswers(extract: AnswerData, yOffset: number): (TextNode | StickyNode)[] {
+  const answerNodes = [];
+  for (const answer of extract.answers) {
+    let answerNode: TextNode | StickyNode;
+
+    if (figma.editorType === 'figjam') {
+      // FigJam에서 실행되는 경우
+      answerNode = figma.createSticky();
+      answerNode.text.characters = answer;
+      answerNode.text.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }];
+    } else {
+      // Figma에서 실행되는 경우
+      answerNode = figma.createText();
+      answerNode.characters = answer;
+      answerNode.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }];
+      answerNode.effects = [{
+        type: "DROP_SHADOW",
+        color: { r: 0, g: 0, b: 0, a: 0.3 },
+        offset: { x: 2, y: 2 },
+        radius: 2,
+        spread: 0,
+        visible: true,
+        blendMode: "NORMAL"
+      }];
+    }
+
+    answerNode.y = yOffset;
     figma.currentPage.appendChild(answerNode);
     answerNodes.push(answerNode);
 
@@ -147,13 +200,13 @@ function createAnswers(extract: AnswerData, yOffset: number) {
  */
 function createWrappingBox(
     questionBox: RectangleNode,
-    answerNodes: TextNode[],
+    answerNodes: (TextNode | StickyNode)[],
     maxBoxWidth: number,
     PADDING: number
 ): RectangleNode {
   const totalHeight = answerNodes.reduce((sum, node) => sum + node.height, questionBox.height) + (4 + answerNodes.length / 2) * PADDING;
   const wrappingBox = figma.createRectangle();
-  wrappingBox.resize(maxBoxWidth + 2 * PADDING, totalHeight);
+  wrappingBox.resize(maxBoxWidth + 4 * PADDING, totalHeight);
   wrappingBox.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
   wrappingBox.x = questionBox.x - PADDING; // 박스의 x 좌표를 조정
   wrappingBox.y = questionBox.y - PADDING;
