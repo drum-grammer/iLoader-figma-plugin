@@ -156,21 +156,21 @@ function createAnswersFigJamSticky(extract: AnswerData, initialYOffset: number):
     const answerNode = figma.createSticky();
     answerNode.text.characters = answer;
     answerNode.text.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }];
-    answerNode.y = yOffset;
 
     // 5개가 차면 x축으로 이동
-    if (currentCount !== 0 && currentCount % MAX_VERTICAL_COUNT === 0) {
-      xShift += answerNode.width + 10; // 10은 노드 간의 간격
+    if (currentCount % MAX_VERTICAL_COUNT === 0) {
+      yOffset = initialYOffset;
     } else {
       yOffset += answerNode.height + 5;
     }
 
-    // 6번째 항목부터 yOffset 초기화
-    if (currentCount === MAX_VERTICAL_COUNT) {
-      yOffset = initialYOffset + answerNode.height + 5;
+    if (currentCount !== 0 && currentCount % MAX_VERTICAL_COUNT === 0) {
+      xShift += answerNode.width + 10; // 10은 노드 간의 간격
     }
 
+    answerNode.y = yOffset;
     answerNode.x = xShift;
+
     figma.currentPage.appendChild(answerNode);
     answerNodes.push(answerNode);
 
@@ -194,7 +194,15 @@ function createWrappingBox(
     maxBoxWidth: number,
     PADDING: number
 ): RectangleNode {
-  const totalHeight = answerNodes.reduce((sum, node) => sum + node.height, questionBox.height);
+  let totalHeight;
+  if (figma.editorType === 'figjam') {
+    // figjam일 경우, 최대 5개의 답변 높이만 계산
+    const limitedAnswerNodes = answerNodes.slice(0, 5);
+    totalHeight = limitedAnswerNodes.reduce((sum, node) => sum + node.height, 0) + (limitedAnswerNodes.length - 1) * 50; // 5는 각 답변 사이의 간격
+  } else {
+    totalHeight = answerNodes.reduce((sum, node) => sum + node.height, 0) + (answerNodes.length - 1) * 5; // 5는 각 답변 사이의 간격
+  }
+
   const wrappingBox = figma.createRectangle();
   wrappingBox.resize(maxBoxWidth + 4 * PADDING, totalHeight);
   wrappingBox.fills = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
