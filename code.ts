@@ -2,13 +2,21 @@ const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <body>
-  <input type="text" id="documentKey" placeholder="Document Key" />
+  <input type="text" id="documentKey" placeholder="Data Extract Key" />
   <button onclick="sendDocumentKey()">Submit</button>
+  <br>
+  <label>
+    <input type="radio" name="editorType" value="figjam">Sticker
+  </label>
+  <label>
+    <input type="radio" name="editorType" value="figma" checked>Text
+  </label>
 
   <script>
     function sendDocumentKey() {
       const documentKey = document.getElementById('documentKey').value;
-      window.parent.postMessage({ pluginMessage: { type: 'document-key', documentKey } }, '*');
+      const editorType = document.querySelector('input[name="editorType"]:checked').value;
+      window.parent.postMessage({ pluginMessage: { type: 'document-key', documentKey, editorType } }, '*');
     }
   </script>
 </body>
@@ -29,11 +37,12 @@ type QuestionnaireData = {
 
 figma.showUI(htmlContent, { width: 240, height: 100 }); // UI를 보여주고 사용자로부터 Document Key를 입력 받습니다.
 
+let selectedEditorType = 'figjam'; // 기본값
 figma.ui.onmessage = (msg) => {
   if (msg.type === 'document-key') {
     const documentKey = msg.documentKey;
-    const url = `https://api-i-loader.52g.studio/data-extracts/key/${documentKey}`; // Document Key를 사용하여 URL을 생성합니다.
-
+    selectedEditorType = msg.editorType;
+    const url = `https://api-i-loader.52g.studio/data-extracts/key/${documentKey}`;
 
     fetch(url)
         .then(response => response.json())
@@ -56,8 +65,8 @@ async function createTextNodesFromData(data: QuestionnaireData) {
     const {questionBox, questionNode} = createQuestion(extract, yOffset);
 
     let answerNodes;
-    if (figma.editorType === 'figjam') {
-      answerNodes = createAnswersFigJamSticky(extract, yOffset + questionBox.height + 10);
+    if (selectedEditorType === 'figjam') {
+        answerNodes = createAnswersFigJamSticky(extract, yOffset + questionBox.height + 10);
     } else {
       answerNodes = createAnswersFigmaNode(extract, yOffset + questionBox.height + 10);
     }
@@ -85,7 +94,7 @@ async function createTextNodesFromData(data: QuestionnaireData) {
 function getMaxBoxWidth(data: QuestionnaireData): number {
   let maxWidth = 0;
 
-  if (figma.editorType === 'figjam') {
+  if (selectedEditorType === 'figjam') {
     return data.extracts.length / 5 * 1200 + 20;
   }
 
@@ -195,12 +204,11 @@ function createWrappingBox(
     PADDING: number
 ): RectangleNode {
   let totalHeight;
-  if (figma.editorType === 'figjam') {
+  if (selectedEditorType === 'figjam') {
     // figjam일 경우, 최대 5개의 답변 높이만 계산
-    const limitedAnswerNodes = answerNodes.slice(0, 5);
-    totalHeight = limitedAnswerNodes.reduce((sum, node) => sum + node.height, 0) + (limitedAnswerNodes.length - 1) * 50; // 5는 각 답변 사이의 간격
+    totalHeight = 1300
   } else {
-    totalHeight = answerNodes.reduce((sum, node) => sum + node.height, 0) + (answerNodes.length - 1) * 5; // 5는 각 답변 사이의 간격
+    totalHeight = answerNodes.reduce((sum, node) => sum + node.height, 0) + (answerNodes.length - 1) * 5 + 5 * PADDING; // 5는 각 답변 사이의 간격
   }
 
   const wrappingBox = figma.createRectangle();
